@@ -1,0 +1,7 @@
+.thread { background-color: #ddf; padding: 10px; margin-bottom: 10px; }
+.thread .omitted { color: #88f; font-weight: bold; }
+.comment { background-color: #aaf; border: 2px solid #88f; padding: 5px 5px 0px 5px; margin-bottom: 10px; }
+.header span { margin-right: 3px; }
+.header .subject { font-weight: bold; }
+.comment .header span { color: #55f; }
+.comment p { margin: 3px; }
