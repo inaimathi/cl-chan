@@ -9,33 +9,45 @@
 		   (:link :rel "stylesheet" :type "text/css" :href "/cl-chan.css"))
 	    (:body ,@body))))
 
+(defun validate-image (hunchentoot-file-tuple)
+  (or (null hunchentoot-file-tuple)
+      (and (funcall (file-type? "image/x-png" "image/png") hunchentoot-file-tuple)
+	   (funcall (file-smaller-than? 3000000) hunchentoot-file-tuple))))
+
 (define-formlet (post-comment-form)
     ((thread-id hidden) 
-     (author text) (email text) (subject text) (body textarea)
+     (author text) (email text) (subject text) (body textarea) 
+     (image file :validation (#'validate-image "We accept PNGs smaller than 3MB"))
      ;; (captcha recaptcha)
      )
-  (let ((new-comment (make-instance 'comment
-				    :thread-id (parse-integer thread-id)
-				    :author author :email email 
-				    :subject subject :body body
-				    :date-time (now))))
-    (update-records-from-instance new-comment)
-    (redirect (format nil "/thread?thread-id=~a" thread-id))))
+    (let* ((pic (store! image))
+	   (new-comment (make-instance 'comment
+				       :thread-id (parse-integer thread-id)
+				       :author author :email email 
+				       :subject subject :body body
+				       :date-time (now)
+				       :image pic)))
+      (update-records-from-instance new-comment)
+      (redirect (format nil "/thread?thread-id=~a" thread-id))))
 
 (define-formlet (post-thread-form)
     ((author text) (email text) (subject text)
      (body textarea :validation ((longer-than? 5) "You need to type at least six characters here."))
+     (image file :validation ((file-type? "image/x-png" "image/png") "You need to upload an image of type PNG"
+			      (file-smaller-than? 3000000) "Your file needs to be smaller than 3MB"))
      ;; (captcha recaptcha)
      )
   (let* ((thread-id (update-records-from-instance
 		     (make-instance 'thread :board-id 1)))
+	 (pic (store! image))
 	 (new-comment (make-instance 'comment 
 				     :thread-id thread-id
 				     :author author :email email 
 				     :subject subject :body body
-				     :date-time (now))))
+				     :date-time (now)
+				     :image pic)))
     (update-records-from-instance new-comment)
-    (redirect"/board")))
+    (redirect "/board")))
 
 (define-easy-handler (board-page :uri "/board") ()
   (page-template (:title "cl-chan")

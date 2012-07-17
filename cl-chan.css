@@ -5,3 +5,5 @@
 .header .subject { font-weight: bold; }
 .comment .header span { color: #55f; }
 .comment p { margin: 3px; }
+.pic { float: left; }
+.clear { clear: both; }

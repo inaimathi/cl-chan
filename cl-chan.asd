@@ -8,6 +8,8 @@
   :maintainer "you"
   :licence "AGPL"
   :description "A simple message board server"
-  :depends-on (:hunchentoot :cl-who :clsql :formlets)
+  :depends-on (:hunchentoot :cl-who :clsql :formlets :cl-fad 
+			    ;; image related
+			    :imago :skippy :ch-image)
   :serial t  
-  :components ((:file "package") (:file "model") (:file "cl-chan") (:file "testing-data")))
+  :components ((:file "package") (:file "model") (:file "cl-chan") (:file "testing-data") (:file "images")))

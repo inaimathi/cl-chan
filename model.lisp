@@ -32,7 +32,9 @@
       (:div :class "thread"
 	    (echo-header first-comment)
 	    (:a :href (format nil "/thread?thread-id=~a" (id thread)) "Reply")
+	    (echo-image first-comment)
 	    (:span :class "body" (:p (str (body first-comment))))
+	    (:br :class "clear")
 	    (when (> omitted-count 0)
 	      (htm (:p :class "omitted" 
 		       (str (format nil "~a comments omitted (and we don't do pictures yet)" 
@@ -47,7 +49,9 @@
       (:div :class "thread"
 	    (echo-header first-comment)
 	    (:span :class "body" 
+		   (echo-image first-comment)
 		   (:p (str (body first-comment))))
+	    (:br :class "clear")
 	    (dolist (r (cdr (comments thread))) (str (echo r)))))))
 
 ;;;;;;;;;; comment
@@ -58,14 +62,23 @@
    (email :reader email :initarg :email :initform nil :type string)
    (subject :reader subject :initarg :subject :initform nil :type string)
    (body :reader body :initarg :body :initform nil :type string)
-   (date-time :reader date-time :initarg :date-time :type wall-time)))
+   (date-time :reader date-time :initarg :date-time :type wall-time)
+   (image :reader image :initarg :image :type string)))
 
 (defmethod echo ((comment comment))
   (with-html-output-to-string (*standard-output* nil :indent t)
     (:div :class "comment"
 	  (echo-header comment)
 	  (:span :class "body" 
-		 (:p (str (body comment)))))))
+		 (echo-image comment)
+		 (:p (str (body comment)))
+		 (:br :class "clear")))))
+
+(defmethod echo-image ((comment comment))
+  (when (image comment) 
+    (with-html-output (*standard-output* nil :indent t)
+      (:a :href (merge-pathnames (image comment) "/img/big/") 
+	  (:img :class "pic" :src (merge-pathnames (image comment) "/img/preview/"))))))
 
 (defmethod echo-header ((comment comment))
   (with-html-output (*standard-output*)
