@@ -11,13 +11,13 @@
 
 (defun validate-image (hunchentoot-file-tuple)
   (or (null hunchentoot-file-tuple)
-      (and (funcall (file-type? "image/x-png" "image/png" "image/jpeg" "image/pjpeg") hunchentoot-file-tuple)
+      (and (funcall *allowed-image-fn* hunchentoot-file-tuple)
 	   (funcall (file-smaller-than? 3000000) hunchentoot-file-tuple))))
 
 (define-formlet (post-comment-form)
     ((thread-id hidden) 
      (author text) (email text) (subject text) (body textarea) 
-     (image file :validation (#'validate-image "We accept PNGs or JPGs smaller than 3MB"))
+     (image file :validation (#'validate-image *image-message*))
      ;; (captcha recaptcha)
      )
     (let* ((pic (store! image))
@@ -33,8 +33,9 @@
 (define-formlet (post-thread-form)
     ((author text) (email text) (subject text)
      (body textarea :validation ((longer-than? 5) "You need to type at least six characters here."))
-     (image file :validation ((file-type? "image/x-png" "image/png" "image/jpeg" "image/pjpeg") "You need to upload an image of type PNG or JPG"
-			      (file-smaller-than? 3000000) "Your file needs to be smaller than 3MB"))
+     (image file :validation (*allowed-image-fn* *image-message*
+			      (file-smaller-than? 3000000) 
+			      "Your file needs to be smaller than 3MB"))
      ;; (captcha recaptcha)
      )
   (let* ((thread-id (update-records-from-instance

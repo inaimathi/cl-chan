@@ -12,6 +12,12 @@
   "Specifies where cl-chan should store images. 
 'big/' and 'preview/' subdirs will be created there.")
 
+(defparameter *allowed-image-fn*
+  (file-type? "image/x-png" "image/png" "image/jpeg" "image/pjpeg" "image/gif"))
+
+(defparameter *image-message*
+  "You need a PNG, JPG or GIF smaller than 3MB")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defparameter *big-dir* (merge-pathnames (make-pathname :directory `(:relative ,*image-storage-directory* "big"))))

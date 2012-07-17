@@ -8,7 +8,7 @@
 (defun file-tuple->image-upload (hunchentoot-file-tuple)
   (destructuring-bind (file-path original-file-name mimetype) hunchentoot-file-tuple
     (make-instance (intern (string-upcase mimetype) :cl-chan)
-		   :name (file-namestring file-path)
+		   :name (format nil "~a-~a" (file-namestring file-path) (get-universal-time)) 
 		   :file-path file-path)))
 
 (defun store! (hunchentoot-file-tuple)
@@ -18,11 +18,9 @@
 
 (defun new-dimensions (size width height)
   "Given a target size and width/height, returns a new width/height preserving aspect ratio. 
-If both dimensions are smaller than or equal to [size], they are merely returned."
-  (let ((ratio (float (/ (max width height) size))))
-    (if (>= 1 ratio)
-	(values width height)
-	(values (round (/ width ratio)) (round (/ height ratio))))))
+Does not scale images smaller than 250x250."
+  (let ((ratio (max 1 (float (/ (max width height) size)))))
+    (values (round (/ width ratio)) (round (/ height ratio)) ratio)))
 
 ;;;;;;;;;; PNGs
 (defclass png (image-upload) ())
@@ -48,8 +46,7 @@ Creates a preview of the given image in the folder specified by pathname."
 (defclass image/pjpeg (jpg) ())
 
 (defmethod store-images! ((img jpg))
-  "Takes an image and a pathname. 
-Creates a preview of the given image in the folder specified by pathname."
+  "Handles JPG images."
   (let ((pic-name (make-pathname :name (name img) :type "jpg")))
     (copy-file (file-path img) (merge-pathnames pic-name *big-dir*))
     (let* ((pic (read-image-file (merge-pathnames pic-name *big-dir*)))
@@ -58,4 +55,28 @@ Creates a preview of the given image in the folder specified by pathname."
       (multiple-value-bind (new-width new-height) (new-dimensions 250 w h)
 	(write-image-file (merge-pathnames pic-name *preview-dir*)
 			  (ch-image:resize-image pic new-height new-width))))
+    (namestring pic-name)))
+
+;;;;;;;;;; GIFs
+(defclass image/gif (image-upload) ())
+
+(defmethod store-images! ((img image/gif))
+  "Takes an image and a pathname. 
+Creates a preview of the given image in the folder specified by pathname."
+  (let* ((pic (load-data-stream (file-path img)))
+	 (first-frame (aref (skippy:images pic) 0))
+	 (width (skippy:width pic))
+	 (height (skippy:height pic))
+	 (pic-name (make-pathname :name (name img) :type "gif")))
+    (copy-file (file-path img) (merge-pathnames pic-name *big-dir*))
+    (multiple-value-bind (new-w new-h) (new-dimensions 250 width height)
+      (let ((new-pic (skippy:make-data-stream 
+		      :width new-w :height new-h
+		      :color-table (skippy:color-table pic))))
+	(skippy:add-image 
+	 (skippy:composite first-frame
+			   (skippy:make-image :width new-w :height new-h) 
+			   :width new-w :height new-h)
+	 new-pic)
+	(output-data-stream new-pic (merge-pathnames pic-name *preview-dir*))))
     (namestring pic-name)))
