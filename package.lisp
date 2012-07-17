@@ -18,6 +18,13 @@
 (defparameter *image-message*
   "You need a PNG, JPG or GIF smaller than 3MB")
 
+(defparameter *db-spec*
+  '("localhost" "cl_chan" "me" "my password")
+  "(server database user password) tuple. Used to connect to the database.")
+
+(defparameter *port* 4242
+  "Specifies the port Hunchentoot should listen on.")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defparameter *big-dir* (merge-pathnames (make-pathname :directory `(:relative ,*image-storage-directory* "big"))))
@@ -26,16 +33,16 @@
 (ensure-directories-exist *big-dir*)
 (ensure-directories-exist *preview-dir*)
 
-(connect '("localhost" "cl_chan" "me" "my password") :database-type :mysql)
+(connect *db-spec* :database-type :mysql)
 
 (setf *default-caching* nil)
 
 (setf formlets:*public-key* "my-public-key" 
       formlets:*private-key* "my-private-key")
 
-(defvar *web-server* (start (make-instance 'hunchentoot:easy-acceptor :port 4242)))
+(defvar *web-server* (start (make-instance 'hunchentoot:easy-acceptor :port *port*)))
 (push (create-static-file-dispatcher-and-handler "/cl-chan.css" (merge-pathnames "cl-chan.css")) *dispatch-table*)
 (push (create-folder-dispatcher-and-handler 
-       "/img/" 
+       "/img/"
        (merge-pathnames (make-pathname :directory `(:relative ,*image-storage-directory*)))) 
       *dispatch-table*)

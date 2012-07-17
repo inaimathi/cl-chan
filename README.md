@@ -1,4 +1,4 @@
-This project is meant to accompany the written piece [CL-Chan (a CLSQL and Hunchentoot crash course) - Part 1](http://langnostic.blogspot.com/2011/08/cl-chan-clsql-and-hunchentoot-crash.html).
+This project is meant to accompany the written pieces [CL-Chan (a CLSQL and Hunchentoot crash course) - Part 1](http://langnostic.blogspot.com/2011/08/cl-chan-clsql-and-hunchentoot-crash.html) and [Part 2](http://langnostic.blogspot.ca/2012/07/cl-chan-clsql-and-hunchentoot-crash.html).
 
 If you want to poke around with it, you'll need to set some stuff up.
 
